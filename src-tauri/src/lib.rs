@@ -3,6 +3,10 @@
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
+#[tauri::command]
+fn lmfoa(name: &str) -> String {
+    format!("Hello, {}! You've been lmfoad!", name)
+}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -10,7 +14,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, lmfoa])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
