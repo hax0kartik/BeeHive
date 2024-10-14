@@ -1,3 +1,0 @@
-[submodule "src-tauri/hivex"]
-	path = src-tauri/hivex
-	url = https://github.com/libguestfs/hivex
