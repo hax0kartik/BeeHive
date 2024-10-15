@@ -4,13 +4,13 @@ import { invoke } from '@tauri-apps/api/core';
 
 function NewPage() {
   const location = useLocation();
-  const navigate = useNavigate(); // Use useNavigate to navigate back
+  const navigate = useNavigate();
   const [filePath, setFilePath] = useState(location.state?.filePath);
   const [greetingMessage, setGreetingMessage] = useState('');
 
   useEffect(() => {
     if (filePath) {
-      invoke('lmfoa', { name: filePath })
+      invoke('hivereader', { filepath: filePath })
         .then((message) => {
           console.log(message);
           setGreetingMessage(message);
@@ -20,7 +20,7 @@ function NewPage() {
   }, [filePath]);
 
   const handleBackClick = () => {
-    navigate(-1); // Navigate back to the previous page
+    navigate(-1);
   };
 
   return (
@@ -34,14 +34,7 @@ function NewPage() {
       {greetingMessage && <p className="mt-4">{greetingMessage}</p>}
       
       <h1 className="text-3xl font-bold">fking works!!!!..</h1>
-
-      {/* Back button */}
-      <button
-        onClick={handleBackClick}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
-      >
-        Go Back
-      </button>
+      <button onClick={handleBackClick} className="btn btn-primary">Go Back</button>
     </div>
   );
 }

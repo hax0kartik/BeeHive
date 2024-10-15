@@ -9,9 +9,15 @@ function Home() {
   async function selectFile() {
     const file = await open({
       multiple: false,
-      directory: false,
+      directory: true,
+      filters: [],
     });
-    warn("File selected: " + file);
+    if (!file) {
+      warn("No folder selected");
+      return;
+    }
+
+    warn("Folder selected: " + file);
     navigate('/secondPage', { state: { filePath: file } });
   }
 
@@ -21,8 +27,8 @@ function Home() {
       <img src="/beehive.svg" className="h-64" alt="Beehive logo" />
 
       <div className="flex flex-col gap-6 w-2/4">
-        <p>Click on the Button Below to select a hive file</p>
-        <button className="btn btn-primary" onClick={selectFile}>Open a file...</button>
+        <p>Click on the Button Below to select a hive Folder</p>
+        <button className="btn btn-primary" onClick={selectFile}>Select a Folder...</button>
       </div>
     </div>
   );
