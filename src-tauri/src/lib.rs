@@ -2,16 +2,52 @@
 
 use forensic_rs::prelude::*;
 use frnsc_hive::reader::HiveRegistryReader;
+use frnsc_hive::reader::open_hive_with_logs;
 
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
 }
 
+pub fn from_fs_custom(mut reader: HiveRegistryReader, mut fs: Box<dyn VirtualFileSystem>) -> ForensicResult<Box<dyn RegistryReader>> {
+    let config_folder = std::path::Path::new(".\\");
+    if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SYSTEM") {
+        reader.set_system(hive);
+    }
+    if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SOFTWARE") {
+        reader.set_software(hive);
+    }
+    if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SECURITY") {
+        reader.set_security(hive);
+    }
+    if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SAM") {
+        reader.set_sam(hive);
+    }
+    match reader.load_user_hives(&mut fs) {
+        Ok(_) => {}
+        Err(e) => {
+            notify_low!(
+                NotificationType::Informational,
+                "Error loading user hives: {:?}",
+                e
+            );
+        }
+    };
+    Ok(Box::new(reader))
+}
+
 #[tauri::command]
 fn hivereader(filepath: &str) -> String {
     let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
-    let reader = HiveRegistryReader::new().from_fs(fs).unwrap();
+    let hreader = HiveRegistryReader::new();
+    let reader = from_fs_custom(hreader, fs).unwrap();
+    let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
+    
+    if res.is_err() {
+        println!("Hive file not found! {:?}", res.err());
+        return "Error Occured!".to_string();
+    }
+
     let user_names_key = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names").expect("Should list all user names");
     let users = reader.enumerate_keys(user_names_key).expect("Should enumerate users");
 
