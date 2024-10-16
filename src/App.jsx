@@ -2,6 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Home from './pages/landing';
 import NewPage from './pages/secondPage';
+import './global.css'
 
 function App() {
   return (

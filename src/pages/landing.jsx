@@ -1,7 +1,6 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { warn } from '@tauri-apps/plugin-log';
 import { useNavigate } from 'react-router-dom';
-import '../output.css';
 
 function Home() {
   const navigate = useNavigate();
