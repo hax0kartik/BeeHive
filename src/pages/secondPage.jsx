@@ -13,6 +13,15 @@ function NewPage() {
   const [Sam, setSam] = useState(false);
   const [User, setUser] = useState(false);
 
+  const samReader = () =>{
+    invoke('hive_sam_reader', { filepath: filePath })
+    .then((message) => {
+      console.log(message);
+      setMessage(message);
+    })
+    .catch((error) => console.error('Error invoking greet:', error));
+  };
+
   useEffect(() => {
     if (filePath) {
       invoke('fileexists', { filepath: filePath })
@@ -38,14 +47,6 @@ function NewPage() {
 
   const handleBackClick = () => {
     navigate(-1);
-  };
-  const samReader = () =>{
-    invoke('hive_sam_reader', { filepath: filePath })
-    .then((message) => {
-      console.log(message);
-      setMessage(message);
-    })
-    .catch((error) => console.error('Error invoking greet:', error));
   };
 
   return (
