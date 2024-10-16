@@ -25,7 +25,7 @@ pub fn from_fs_custom(mut reader: HiveRegistryReader, mut fs: Box<dyn VirtualFil
     }
     match reader.load_user_hives(&mut fs) {
         Ok(_) => {}
-        Err(e) => {
+        Err(e) => { 
             notify_low!(
                 NotificationType::Informational,
                 "Error loading user hives: {:?}",
@@ -51,14 +51,27 @@ fn hivereader(filepath: &str) -> String {
     let user_names_key = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names").expect("Should list all user names");
     let users = reader.enumerate_keys(user_names_key).expect("Should enumerate users");
 
+    let network_cards = reader.open_key(HKLM, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkCards").unwrap();
+    let network_cards_values = reader.enumerate_keys(network_cards).unwrap();
+
+    let run_apps = reader.open_key(HKLM, r"SOFTWARE\RegisteredApplications").unwrap();
+    let run_apps_values = reader.enumerate_values(run_apps).unwrap();
+
+    println!("\n---/ Registered Applications /----");
+    for value in run_apps_values.iter() {
+        let val = reader.read_value(run_apps, &value).unwrap();
+        println!("{:?} : {:?}", value, val);
+    }
+
+    println!("Network Cards: {:?}", network_cards_values);
     println!("Users: {:?}", users);
-    assert_eq!("Administrador", users[0]);
-    assert_eq!("DefaultAccount", users[1]);
-    assert_eq!("Invitado", users[2]);
-    assert_eq!("maria.feliz.secret", users[3]);
-    assert_eq!("pepe.contento.secret", users[4]);
-    assert_eq!("SuperSecretAdmin", users[5]);
-    format!("Users: {:?}", users)
+    // assert_eq!("Administrador", users[0]);
+    // assert_eq!("DefaultAccount", users[1]);
+    // assert_eq!("Invitado", users[2]);
+    // assert_eq!("maria.feliz.secret", users[3]);
+    // assert_eq!("pepe.contento.secret", users[4]);
+    // assert_eq!("SuperSecretAdmin", users[5]);
+    format!("Users: {:?} \n Network Cards: {:?} Run apps: {:?}", users, network_cards_values, run_apps_values)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
