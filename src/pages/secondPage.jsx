@@ -60,14 +60,26 @@ function NewPage() {
           if (split[0] != "false") {
             setSystem(true);
           }
+          else{
+            setSystem(false);
+          }
           if (split[1] != "false") {
             setSoftware(true);
+          }
+          else{
+            setSoftware(false);
           }
           if (split[2] != "false") {
             setSecurity(true);
           }
+          else{
+            setSecurity(false);
+          }
           if (split[3] != "false") {
             setSam(true);
+          }
+          else{
+            setSam(false);
           }
         })
         .catch((error) => console.error('Error invoking greet:', error));

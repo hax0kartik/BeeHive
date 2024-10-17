@@ -25,20 +25,32 @@ pub fn from_fs_custom(mut reader: HiveRegistryReader, mut fs: Box<dyn VirtualFil
         reader.set_system(hive);
         *storage.is_system_present.lock().unwrap() = true;
     }
+    else{
+        *storage.is_system_present.lock().unwrap() = false;
+    }
 
     if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SOFTWARE") {
         reader.set_software(hive);
         *storage.is_software_present.lock().unwrap() = true;
+    }
+    else{
+        *storage.is_software_present.lock().unwrap() = false;
     }
 
     if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SECURITY") {
         reader.set_security(hive);
         *storage.is_security_present.lock().unwrap() = true;
     }
+    else{
+        *storage.is_security_present.lock().unwrap() = false;
+    }
 
     if let Some(hive) = open_hive_with_logs(&mut fs, config_folder, "SAM") {
         reader.set_sam(hive);
         *storage.is_sam_present.lock().unwrap() = true;
+    }
+    else{
+        *storage.is_sam_present.lock().unwrap() = false;
     }
 
     match reader.load_user_hives(&mut fs) {
@@ -99,17 +111,17 @@ fn hive_software_reader(filepath: &str, storage: State<AppStorage>) -> String  {
     if *storage.is_software_present.lock().unwrap() {
         let network_cards = reader.open_key(HKLM, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkCards").unwrap();
         let network_cards_values = reader.enumerate_keys(network_cards).unwrap();
-        println!("Network Cards: {:?}", network_cards_values);
+        // println!("Network Cards: {:?}", network_cards_values);
         s.push_str(&network_cards_values.join(", "));
     
         let run_apps = reader.open_key(HKLM, r"SOFTWARE\RegisteredApplications").unwrap();
         let run_apps_values = reader.enumerate_values(run_apps).unwrap();
     
-        println!("\n---/ Registered Applications /----");
-        for value in run_apps_values.iter() {
-            let val = reader.read_value(run_apps, &value).unwrap();
-            println!("{:?} : {:?}", value, val);
-        }
+        // println!("\n---/ Registered Applications /----");
+        // for value in run_apps_values.iter() {
+        //     let val = reader.read_value(run_apps, &value).unwrap();
+        //     println!("{:?} : {:?}", value, val);
+        // }
         s.push_str(&run_apps_values.join(", "));
     }
 
@@ -143,7 +155,7 @@ fn hive_sam_reader(filepath: &str, storage: State<AppStorage>) -> String  {
     if *storage.is_sam_present.lock().unwrap() {
         let user_names_key = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names").expect("Should list all user names");
         let users = reader.enumerate_keys(user_names_key).expect("Should enumerate users");
-        println!("Users: {:?}", users);
+        // println!("Users: {:?}", users);
         s.push_str(&users.join(", "));
     }
 
