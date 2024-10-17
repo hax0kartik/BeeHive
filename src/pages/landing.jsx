@@ -1,7 +1,6 @@
 import { open } from '@tauri-apps/plugin-dialog';
 import { warn } from '@tauri-apps/plugin-log';
 import { useNavigate } from 'react-router-dom';
-import { invoke } from '@tauri-apps/api/core';
 
 function Home() {
   const navigate = useNavigate();
@@ -16,9 +15,6 @@ function Home() {
       warn("No folder selected");
       return;
     }
-
-    invoke('hivereader', { filepath: file})
-
     warn("Folder selected: " + file);
     navigate('/secondPage', { state: { filePath: file } });
   }

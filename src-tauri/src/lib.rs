@@ -56,30 +56,28 @@ pub fn from_fs_custom(mut reader: HiveRegistryReader, mut fs: Box<dyn VirtualFil
 
 #[tauri::command]
 fn fileexists(filepath: &str, storage: State<AppStorage>) -> String {
-    println!("File exists executed");
+    let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
+    let hreader = HiveRegistryReader::new();
+    from_fs_custom(hreader, fs, &storage).unwrap();
+    // println!("File exists executed {}",filepath);
 
     let system = *storage.is_system_present.lock().unwrap();
     let software = *storage.is_software_present.lock().unwrap();
     let security = *storage.is_security_present.lock().unwrap();
     let sam = *storage.is_sam_present.lock().unwrap();
 
-    println!("{:?}", sam);
+    // println!("{:?}", sam);
 
     format!("{:?}:{:?}:{:?}:{:?}", system, software, security, sam)
 }
 
 #[tauri::command]
-fn hivereader(filepath: &str, storage: State<AppStorage>) -> String {
+fn hive_system_reader(filepath: &str, storage: State<AppStorage>) -> String  {
     let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
     let hreader = HiveRegistryReader::new();
     let reader = from_fs_custom(hreader, fs, &storage).unwrap();
-    let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
+    // let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
     let mut s = String::new();
-    
-    if res.is_err() {
-        println!("Hive file not found! {:?}", res.err());
-        return "Error Occured!".to_string();
-    }
 
     if *storage.is_sam_present.lock().unwrap() {
         let user_names_key = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names").expect("Should list all user names");
@@ -88,7 +86,15 @@ fn hivereader(filepath: &str, storage: State<AppStorage>) -> String {
         s.push_str(&users.join(", "));
     }
 
-    s.push_str(":");
+    format!("{}", s)
+}
+#[tauri::command]
+fn hive_software_reader(filepath: &str, storage: State<AppStorage>) -> String  {
+    let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
+    let hreader = HiveRegistryReader::new();
+    let reader = from_fs_custom(hreader, fs, &storage).unwrap();
+    // let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
+    let mut s = String::new();
 
     if *storage.is_software_present.lock().unwrap() {
         let network_cards = reader.open_key(HKLM, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\NetworkCards").unwrap();
@@ -107,25 +113,31 @@ fn hivereader(filepath: &str, storage: State<AppStorage>) -> String {
         s.push_str(&run_apps_values.join(", "));
     }
 
-    // println!("Network Cards: {:?}", network_cards_values);
-    // println!("Users: {:?}", users);
-    // assert_eq!("Administrador", users[0]);
-    // assert_eq!("DefaultAccount", users[1]);
-    // assert_eq!("Invitado", users[2]);
-    // assert_eq!("maria.feliz.secret", users[3]);
-    // assert_eq!("pepe.contento.secret", users[4]);
-    // assert_eq!("SuperSecretAdmin", users[5]);
-    // format!("Users: {:?} \n Network Cards: {:?} Run apps: {:?}", users, network_cards_values, run_apps_values)
-    // println!("{}", s);
     format!("{}", s)
 }
+#[tauri::command]
+fn hive_security_reader(filepath: &str, storage: State<AppStorage>) -> String  {
+    let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
+    let hreader = HiveRegistryReader::new();
+    let reader = from_fs_custom(hreader, fs, &storage).unwrap();
+    // let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
+    let mut s = String::new();
 
+    if *storage.is_sam_present.lock().unwrap() {
+        let user_names_key = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names").expect("Should list all user names");
+        let users = reader.enumerate_keys(user_names_key).expect("Should enumerate users");
+        println!("Users: {:?}", users);
+        s.push_str(&users.join(", "));
+    }
+
+    format!("{}", s)
+}
 #[tauri::command]
 fn hive_sam_reader(filepath: &str, storage: State<AppStorage>) -> String  {
     let fs = Box::new(forensic_rs::core::fs::ChRootFileSystem::new(filepath, Box::new(forensic_rs::core::fs::StdVirtualFS::new())));
     let hreader = HiveRegistryReader::new();
     let reader = from_fs_custom(hreader, fs, &storage).unwrap();
-    let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
+    // let res = reader.open_key(HKLM, r"SAM\Domains\Account\Users\Names");
     let mut s = String::new();
 
     if *storage.is_sam_present.lock().unwrap() {
@@ -150,7 +162,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![greet, hivereader, fileexists, hive_sam_reader])
+        .invoke_handler(tauri::generate_handler![greet, fileexists, hive_system_reader, hive_software_reader, hive_security_reader, hive_sam_reader])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
