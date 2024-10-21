@@ -100,7 +100,7 @@ impl Hives {
                 let filepath = String::from(file.path().to_str().unwrap()); 
                 let filename = file.file_name().into_string().unwrap();
 
-                match filename.as_str() {
+                match filename.to_uppercase().as_str() {
                     "SYSTEM" => {
                         let mut hive = Box::new(Hive::new(&filepath));
                         hive.create_internal_hive();
