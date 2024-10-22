@@ -8,6 +8,7 @@ import { message } from '@tauri-apps/plugin-dialog';
 
 function NewPage() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [filePath, setFilePath] = useState(location.state?.filePath);
   const [Message, setMessage] = useState('');
   const [System, setSystem] = useState(false);

@@ -8,8 +8,13 @@ const Header = ({ onChange }) => {
     const [filePath, setFilePath] = useState(location.state?.filePath);
     const [Message, setMessage] = useState('');
 
-    const handleBackClick = () => {
-        navigate(-1);
+    const home = () => {
+        navigate('/');
+    };
+
+    const common = () => {
+        //   navigate('/common', { state: { Message:Message, filePath: filePath, System:System, Security:Security, Software:Software, Sam:Sam, User:User } });
+        navigate('/common', { state: { Message: Message, filePath: filePath } });
     };
 
     useEffect(() => {
@@ -44,7 +49,7 @@ const Header = ({ onChange }) => {
             <div className='dropdown dropdown-hover'>
                 <div className='btn btn-ghost btn-sm'>Mode</div>
                 <ul className='dropdown-content menu bg-base-100 shadow w-40 rounded-box z-10'>
-                    <li className=''><a>Commons</a></li>
+                    <li className=''><a onClick={common}>Commons</a></li>
                     <li className=''><a>Classic</a></li>
                     <li className=''><a>Diff View</a></li>
                 </ul>
@@ -52,7 +57,7 @@ const Header = ({ onChange }) => {
             <div className='dropdown dropdown-hover'>
                 <div className='btn btn-ghost btn-sm'>Help</div>
                 <ul className='dropdown-content menu bg-base-100 shadow w-40 rounded-box z-10'>
-                    <li className='' onClick={handleBackClick}><a>Welcome</a></li>
+                    <li className='' onClick={home}><a>Welcome</a></li>
                     <li className=''><a>Preferences...</a></li>
                     <li className=''><a>About</a></li>
                 </ul>
