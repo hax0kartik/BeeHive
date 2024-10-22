@@ -2,19 +2,22 @@ import { warn } from '@tauri-apps/plugin-log';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import Header from '../compenents/header';
-import Footer from '../compenents/footer';
+import Header from '../components/header';
+import Footer from '../components/footer';
 import { message } from '@tauri-apps/plugin-dialog';
 
 function Common() {
   const location = useLocation();
   const [filePath, setFilePath] = useState(location.state?.filePath);
+ 
   const [System, setSystem] = useState(location.state?.System||false);
   const [Software, setSoftware] = useState(location.state?.Software||false);
   const [Security, setSecurity] = useState(location.state?.Security||false);
   const [Sam, setSam] = useState(location.state?.Sam||false);
   const [User, setUser] = useState(location.state?.user||false);
-  const [Message, setMessage] = useState(location.state?.Message);
+
+  
+
 
   const filePathChange = (data) => {
     setMessage(data['Message']);
