@@ -2,7 +2,7 @@
 
 use std::sync::Mutex;
 use tauri::State;
-use nt_hive2::{KeyNode, SubPath};
+use nt_hive2::{KeyNode, SubPath, RegistryValue};
 use std::fs::File;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -12,6 +12,56 @@ mod trees;
 
 struct AppStorage {
     hive_reader: Mutex<hives::Hives>
+}
+
+#[tauri::command]
+fn t_get_keys(keypath: &str, storage: State<AppStorage>) -> trees::KeyValue {
+    println!("{}", keypath);
+    let mut res = trees::KeyValue::new();
+
+    let subkeys = keypath.split("\\").collect::<Vec<_>>();
+
+    if subkeys.len() < 2 {
+        return res;
+    }
+
+    let mut hive_reader = storage.hive_reader.lock().unwrap();
+
+    let hive = match subkeys[1] {
+        "Security" | "System" | "User" | "SAM" | "Software" => {
+            hive_reader.get_hive_by_name(subkeys[1]).unwrap()
+        }
+
+        "" => return res,
+
+        _ => {
+            println!("Hive name : {:?}", subkeys[1]);
+            unimplemented!()
+        }
+    };
+
+    let key_node = hive.get_root_node().unwrap();
+    let mut read_location : Vec<&str> = Vec::new();
+    read_location.extend_from_slice(&subkeys[2..]);
+
+    if read_location.len() > 0 { 
+        let rnode = key_node.subpath(&read_location, hive.hive.as_mut().unwrap());
+        let node = rnode.unwrap().unwrap();
+
+        for value in node.borrow().values().iter() {
+            let valstr = match value.value() {
+                RegistryValue::RegNone | RegistryValue::RegUnknown | RegistryValue::RegFileTime => format!(""),
+                RegistryValue::RegDWord(val) | RegistryValue::RegDWordBigEndian(val) => format!("0x{:08X}", val),
+                RegistryValue::RegSZ(val) => format!("{:?}", val),
+                val => format!("{:?}", val)
+            };
+
+            res.push_key(value.name(), &valstr);
+            println!("Key pair: {:?}, {:?}", value.name(), valstr);
+        }
+    }
+
+    return res;
 }
 
 #[tauri::command]
@@ -116,7 +166,7 @@ pub fn run() {
         .plugin(tauri_plugin_log::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_shell::init())
-        .invoke_handler(tauri::generate_handler![t_hive_reader, t_is_hive_valid, t_get_subkeys])
+        .invoke_handler(tauri::generate_handler![t_hive_reader, t_is_hive_valid, t_get_subkeys, t_get_keys])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

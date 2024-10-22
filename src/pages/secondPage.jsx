@@ -16,6 +16,7 @@ function NewPage() {
   const [Security, setSecurity] = useState(false);
   const [Sam, setSam] = useState(false);
   const [User, setUser] = useState(false);
+  const [Table, setTable] = useState({});
 
   const filePathChange = (data) => {
     // console.log(data);
@@ -38,29 +39,34 @@ function NewPage() {
         name: "HKEY_LOCAL_MACHINE",
         path: "\\",
         hasChildren: true,
+        values: {},
         children: [
           {
             name: "Security",
             path: "\\Security",
             children: [],
+            values: {},
             hasChildren: true
           },
           {
             name: "SAM",
             path: "\\SAM",
             children: [],
+            values: {},
             hasChildren: true
           },
           {
             name: "Software",
             path: "\\Software",
             children: [],
+            values: {},
             hasChildren: true
           },
           {
             name: "System",
             path: "\\System",
             children: [],
+            values: {},
             hasChildren: true
           }
         ]
@@ -73,7 +79,7 @@ function NewPage() {
       warn('Error: filePath is undefined or empty.');
       return;
     }
-    warn("System reader called : "+filePath);
+    warn("System reader called : " + filePath);
     invoke('t_hive_reader', { filepath: filePath })
       .then((message) => {
         console.log(message);
@@ -81,10 +87,6 @@ function NewPage() {
       })
       .catch((error) => warn('Error invoking t_hive_reader: ' + error));
   };
-
-  useEffect(() => {
-    systemReader(filePath);
-  }, []);
 
   const getValidHives = () => {
     // warn("GET VALID HIVES CALLED : ------------------------------------------------");
@@ -124,6 +126,7 @@ function NewPage() {
                 name: newChildren[j]["name"],
                 path: treeNode[i].path + "\\" + newChildren[j]["name"],
                 children: [],
+                values: {},
                 hasChildren: newChildren[j]["has_children"],
               }
               treeNode[i].children.push(obj);
@@ -141,6 +144,44 @@ function NewPage() {
 
     return newTree;
   }
+
+  const modifyTreeAddKeypair = (otree, key, keypair) => {
+    function node_traverse(treeNode, node) {
+      let current = node[0];
+      // console.log("Current node is " + node)
+
+      for (let i = 0; i < treeNode.length; i++) {
+        warn(treeNode[i].name, current)
+        if (treeNode[i].name === current) {
+          if (node.length > 1) {
+            node.shift();
+            node_traverse(treeNode[i].children, node);
+          } else {
+            treeNode[i].values = keypair;
+          }
+        }
+      }
+    }
+
+    let keys = key.split("\\")
+    keys[0] = "HKEY_LOCAL_MACHINE";
+
+    let newTree = otree;
+    node_traverse(newTree, keys);
+
+    return newTree;
+  }
+
+  const get_key_info = async (e) => {
+    let res = await invoke('t_get_keys', { keypath: e });
+    let nTree = modifyTreeAddKeypair(tree, e, res["entries"]);
+    setTree(prevTree => ([...nTree]));
+    setTable(prevTable => ({ ...res["entries"] }));
+  }
+
+  useEffect(() => {
+    systemReader(filePath);
+  }, []);
 
   const handleExtension = async (e) => {
     let res = await invoke('t_get_subkeys', { keypath: e.target.id })
@@ -167,8 +208,10 @@ function NewPage() {
       )
     } else {
       return (
-        <li onClick={console.log("Li element pressed")}  >
-          <a>
+        <li onClick={(e) => {
+          get_key_info(e.target.id)
+        }} id={treeNode["path"]}>
+          <a id={treeNode["path"]}>
             {treeNode["name"]}
           </a>
         </li>
@@ -190,11 +233,30 @@ function NewPage() {
           </ul>
         </div>
         <div className="divider divider-horizontal"></div>
-        <div className=''>
-          {Message && <p className="mt-4">{Message}</p>}
+        <div className='w-full'>
+          <table className='table table-fixed'>
+            <thead>
+              <tr className=''>
+                <th className='text-base'> Key </th>
+                <th className='text-base'> Value </th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                Object.entries(Table).map(entry => {
+                  return (
+                    <tr>
+                      <th> {entry[0]} </th>
+                      <th> {entry[1]} </th>
+                    </tr>
+                  )
+                })
+              }
+            </tbody>
+          </table>
         </div>
       </div>
-      <Footer System={System} Software={Software} Security={Security} User={User} Sam={Sam} mode={"Classic"}/>
+      <Footer System={System} Software={Software} Security={Security} User={User} Sam={Sam} mode={"Classic"} />
     </div>
   );
 }

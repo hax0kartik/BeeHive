@@ -1,4 +1,5 @@
 use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 pub struct Entry {
@@ -29,5 +30,22 @@ impl Entries {
 
     pub fn push_key(&mut self, name: &str, has_children : bool) {
         self.entries.push(Entry::new(name, has_children));
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct KeyValue {
+    entries : HashMap::<String, String>
+}
+
+impl KeyValue {
+    pub fn new() -> Self {
+        Self {
+            entries : HashMap::new()
+        }
+    }
+
+    pub fn push_key(&mut self, name: &str, value: &str) {
+        self.entries.insert(name.to_string(), value.to_string());
     }
 }
