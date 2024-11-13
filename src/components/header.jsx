@@ -17,6 +17,14 @@ const Header = ({ onChange }) => {
         navigate('/common', { state: { Message: Message, filePath: filePath } });
     };
 
+    const diff = () => {
+        navigate('/diff_landing');
+    }
+
+    const classic = () => {
+        navigate("/classic", { state: {filePath : filePath } });
+    }
+
     useEffect(() => {
         onChange({ filePath, Message });
     }, [filePath, Message]);
@@ -50,8 +58,8 @@ const Header = ({ onChange }) => {
                 <div className='btn btn-ghost btn-sm'>Mode</div>
                 <ul className='dropdown-content menu bg-base-100 shadow w-40 rounded-box z-10'>
                     <li className=''><a onClick={common}>Commons</a></li>
-                    <li className=''><a>Classic</a></li>
-                    <li className=''><a>Diff View</a></li>
+                    <li className=''><a onClick={classic}>Classic</a></li>
+                    <li className=''><a onClick={diff}>Diff View</a></li>
                 </ul>
             </div>
             <div className='dropdown dropdown-hover'>

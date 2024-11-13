@@ -6,7 +6,7 @@ import Header from '../components/header';
 import Footer from '../components/footer';
 import { message } from '@tauri-apps/plugin-dialog';
 
-function NewPage() {
+function Classic() {
   const location = useLocation();
   const navigate = useNavigate();
   const [filePath, setFilePath] = useState(location.state?.filePath);
@@ -251,4 +251,4 @@ function NewPage() {
   );
 }
 
-export default NewPage;
+export default Classic;

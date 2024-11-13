@@ -16,7 +16,7 @@ function Home() {
       return;
     }
     warn("Folder selected: " + file);
-    navigate('/secondPage', { state: { filePath: file } });
+    navigate('/classic', { state: { filePath: file } });
   }
 
   return (
