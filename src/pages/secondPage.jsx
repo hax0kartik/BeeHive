@@ -34,44 +34,39 @@ function NewPage() {
   }, [filePath]);
 
   const [tree, setTree] = useState(
-    [
-      {
-        name: "HKEY_LOCAL_MACHINE",
+    {
+      "HKEY_LOCAL_MACHINE" : {
         path: "\\",
         hasChildren: true,
         values: {},
-        children: [
-          {
-            name: "Security",
+        children: {
+          Security : {
             path: "\\Security",
-            children: [],
+            children: {},
             values: {},
             hasChildren: true
           },
-          {
-            name: "SAM",
+          SAM : {
             path: "\\SAM",
-            children: [],
+            children: {},
             values: {},
             hasChildren: true
           },
-          {
-            name: "Software",
+          Software : {
             path: "\\Software",
-            children: [],
+            children: {},
             values: {},
             hasChildren: true
           },
-          {
-            name: "System",
+          System :  {
             path: "\\System",
-            children: [],
+            children: {},
             values: {},
             hasChildren: true
           }
-        ]
       }
-    ]
+      }
+    }
   );
 
   const systemReader = (filePath) => {
@@ -112,26 +107,24 @@ function NewPage() {
       let current = node[0];
       // console.log("Current node is " + node)
 
-      for (let i = 0; i < treeNode.length; i++) {
-        warn(treeNode[i].name, current)
-        if (treeNode[i].name === current) {
-          if (node.length > 1) {
-            node.shift();
-            node_traverse(treeNode[i].children, node);
-          } else {
-            // warn("Node len < 1 " + node)
-            // warn("No of newChildren" + newChildren.length);
-            for (let j = 0; j < newChildren.length; j++) {
-              let obj = {
-                name: newChildren[j]["name"],
-                path: treeNode[i].path + "\\" + newChildren[j]["name"],
-                children: [],
-                values: {},
-                hasChildren: newChildren[j]["has_children"],
-              }
-              treeNode[i].children.push(obj);
+      if (treeNode[current] !== undefined) {
+        if (node.length > 1) {
+          node.shift();
+          node_traverse(treeNode[current].children, node);
+        } else {
+          let objs = new Map();
+          for (let j = 0; j < newChildren.length; j++) {
+            let obj = {
+              path: treeNode[current].path + "\\" + newChildren[j]["name"],
+              children: {},
+              values: {},
+              hasChildren: newChildren[j]["has_children"],
             }
+
+            objs.set(newChildren[j]["name"], obj);
           }
+
+          treeNode[current].children = Object.fromEntries(objs);
         }
       }
     }
@@ -150,15 +143,12 @@ function NewPage() {
       let current = node[0];
       // console.log("Current node is " + node)
 
-      for (let i = 0; i < treeNode.length; i++) {
-        warn(treeNode[i].name, current)
-        if (treeNode[i].name === current) {
-          if (node.length > 1) {
-            node.shift();
-            node_traverse(treeNode[i].children, node);
-          } else {
-            treeNode[i].values = keypair;
-          }
+      if (treeNode[current] !== undefined) {
+        if (node.length > 1) {
+          node.shift();
+          node_traverse(treeNode[current].children, node);
+        } else {
+          treeNode[current].values = keypair;
         }
       }
     }
@@ -175,7 +165,7 @@ function NewPage() {
   const get_key_info = async (e) => {
     let res = await invoke('t_get_keys', { keypath: e });
     let nTree = modifyTreeAddKeypair(tree, e, res["entries"]);
-    setTree(prevTree => ([...nTree]));
+    setTree(prevTree => ({...nTree}));
     setTable(prevTable => ({ ...res["entries"] }));
   }
 
@@ -186,20 +176,20 @@ function NewPage() {
   const handleExtension = async (e) => {
     let res = await invoke('t_get_subkeys', { keypath: e.target.id })
     let nTree = modifyTree(tree, e.target.id, res["entries"]);
-    setTree(prevTree => ([...nTree]));
+    setTree(prevTree => ({...nTree}));
   }
 
-  function addMenuEntries(treeNode) {
+  function addMenuEntries(key, treeNode) {
     const hasChildren = treeNode["hasChildren"];
     if (hasChildren) {
       return (
         <li>
           <details>
-            <summary onClick={handleExtension} id={treeNode["path"]}>{treeNode["name"]}</summary>
+            <summary onClick={handleExtension} id={treeNode["path"]}>{key}</summary>
             <ul>
               {
-                treeNode["children"].map((entry) => {
-                  return addMenuEntries(entry);
+                Object.entries(treeNode["children"]).map((entry) => {
+                  return addMenuEntries(entry[0], entry[1]);
                 })
               }
             </ul>
@@ -212,7 +202,7 @@ function NewPage() {
           get_key_info(e.target.id)
         }} id={treeNode["path"]}>
           <a id={treeNode["path"]}>
-            {treeNode["name"]}
+            {key}
           </a>
         </li>
       )
@@ -226,8 +216,8 @@ function NewPage() {
         <div className='flex align-items flex-col pl-6 pt-6 gap-4 w-2/5'>
           <ul className="menu menu-xs bg-base-200 rounded-lg w-full overflow-x-auto overflow-y-auto h-5/6">
             {
-              tree.map((entry) => {
-                return addMenuEntries(entry);
+              Object.entries(tree).map(entry => {
+                return addMenuEntries(entry[0], entry[1]);
               })
             }
           </ul>
