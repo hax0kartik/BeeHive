@@ -11,7 +11,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Diff />} />
         <Route path="/classic" element={<Classic />} />
         <Route path="/common" element={<Common />} />
         <Route path="/diff_landing" element={<DiffLanding />} />
