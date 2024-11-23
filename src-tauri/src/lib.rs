@@ -14,7 +14,7 @@ struct AppStorage {
     hive_reader: Mutex<hives::Hives>
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn t_get_keys(keypath: &str, storage: State<AppStorage>) -> trees::KeyValue {
     println!("{}", keypath);
     let mut res = trees::KeyValue::new();
@@ -64,7 +64,7 @@ fn t_get_keys(keypath: &str, storage: State<AppStorage>) -> trees::KeyValue {
     return res;
 }
 
-#[tauri::command]
+#[tauri::command(async)]
 fn t_get_subkeys(keypath: &str, storage: State<AppStorage>) -> trees::Entries {
     println!("{}", keypath);
     let mut res = trees::Entries::new();
