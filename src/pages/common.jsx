@@ -39,6 +39,134 @@ function Common() {
     setFilePath(data['filePath']);
   };
 
+  const setStartupApplications = async () => {
+    let res = await invoke('t_get_keys', { keypath: "\\Software\\Microsoft\\Windows\\CurrentVersion\\Run" });
+    let res2 = await invoke('t_get_keys', { keypath: "\\Software\\Microsoft\\Windows\\CurrentVersion\\RunOnce" });
+
+    let collected = [res, res2];
+
+    const buildTable = () => {
+      return (
+        <table className='table table-fixed w-full'>
+            <thead>
+              <tr className=''>
+                <th className='text-base'> Name </th>
+                <th className='text-base'> Location </th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                collected.map((en) =>
+                  Object.keys(en["entries"]).map((e) => {
+                    return (
+                      <tr>
+                        <td> {e} </td>
+                        <td> {en["entries"][e].replaceAll("\\\\", "\\").replaceAll("\"", "")} </td>
+                      </tr>
+                    )
+                  })
+                )
+              }
+            </tbody>
+          </table>
+      )
+    }
+
+    setRside(buildTable());
+  }
+
+  const setConnectedNetworks = async () => {
+    let path = "\\Software\\Microsoft\\Windows NT\\CurrentVersion\\NetworkList\\Profiles";
+    let subkeys = await invoke("t_get_subkeys", { keypath: path });
+
+    warn("Subkeys: " + JSON.stringify(subkeys, null, 2));
+
+    const convertToDate = (originalFileTime) => {
+
+      let dateCreated = originalFileTime.replaceAll(" ", "").split(",");
+      warn(dateCreated);
+
+      let nh = [];
+      for (let j = 0; j < dateCreated.length; j++) {
+        let n = Number.parseInt(dateCreated[j]);
+        nh.push(n);
+      }
+
+      let year = nh[0] + (nh[1] * 256);
+      let month = nh[2];
+      let day = nh[6];
+      let minute = nh[8];
+      let second = nh[10];
+      let millisecond = nh[12];
+
+      return new Date(year, month, day, minute, second, millisecond);
+    }
+
+    const get_keys = async (new_path) => {
+      let values = await invoke("t_get_keys", {keypath: new_path});
+      return values;
+    }
+
+    const build = async () => {
+      let data = [];
+      for (let i = 0; i < subkeys["entries"].length; i++) {
+        let key = subkeys["entries"][i]["name"];
+        let new_path = path + "\\" + key;
+        warn(new_path);
+        let values = await get_keys(new_path);
+        let name = values["entries"]["ProfileName"].replaceAll("\"", "");
+        let profile = values["entries"]["Description"].replaceAll("\"", "");
+
+        let dateCreated = values["entries"]["DateCreated"].substring(
+          values["entries"]["DateCreated"].indexOf("[") + 1,
+          values["entries"]["DateCreated"].indexOf("]")
+        );
+
+        let dateLastConnected = values["entries"]["DateLastConnected"].substring(
+          values["entries"]["DateLastConnected"].indexOf("[") + 1,
+          values["entries"]["DateLastConnected"].indexOf("]")
+        );
+
+        dateCreated = convertToDate(dateCreated);
+        dateLastConnected = convertToDate(dateLastConnected);
+
+        data.push((
+          <tr>
+            <td> {name} </td>
+            <td> {profile} </td>
+            <td> {dateCreated.toString()} </td>
+            <td> {dateLastConnected.toString()} </td>
+          </tr>
+        ))
+      }
+
+      return data;
+    }
+
+    const buildTable = (innerdata) => {
+      return (
+        <table className='table table-fixed w-full'>
+          <thead>
+            <tr className=''>
+              <th className='text-base'> Name </th>
+              <th className='text-base'> Description </th>
+              <th className='text-base'> Date Created </th>
+              <th className='text-base'> Last Used </th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              innerdata
+            }
+          </tbody>
+        </table>
+      )
+    }
+
+    let innerdata = await build();
+    setRside(buildTable(innerdata));
+  }
+
   const setAttachedDevices = async () => {
     let res = await invoke('t_get_subkeys', { keypath: "\\System\\ControlSet001\\Enum\\USBSTOR" });
 
@@ -58,9 +186,9 @@ function Common() {
                   let entries = e.name.split("&");
                   return (
                     <tr>
-                      <th> {entries[1]} </th>
-                      <th> {entries[2]} </th>
-                      <th> {entries[3]} </th>
+                      <td> {entries[1]} </td>
+                      <td> {entries[2]} </td>
+                      <td> {entries[3]} </td>
                     </tr>
                   )
                 })
@@ -80,8 +208,9 @@ function Common() {
         <div className='flex align-items flex-col pl-6 pt-6 gap-4 w-2/5'>
           <ul className="menu menu-xs bg-base-200 rounded-lg w-full overflow-x-auto overflow-y-auto h-5/6">
           <div className='flex flex-col gap-5'>
-            <button className='btn btn-primary'> System Analysis </button>
+            <button className='btn btn-primary' onClick={setStartupApplications}> Startup Applications </button>
             <button className='btn btn-primary' onClick={setAttachedDevices}> Attached Devices </button>
+            <button className='btn btn-primary' onClick={setConnectedNetworks}> Connected Networks </button>
           </div>
           </ul>
         </div>
@@ -96,7 +225,8 @@ function Common() {
         </div>
       </div>
       <Footer System={System} Software={Software} Security={Security} User={User} Sam={Sam} mode={"Common"}/>
-    </div>);
+    </div>
+  );
 }
 
 export default Common;
