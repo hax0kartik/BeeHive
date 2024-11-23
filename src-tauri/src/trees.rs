@@ -1,5 +1,4 @@
 use serde::{Serialize, Deserialize};
-use serde_json::json;
 use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
@@ -78,6 +77,7 @@ impl Node {
         self.values.insert(key.to_string(), value.to_string());
     }
 
+    #[allow(dead_code)]
     pub fn print(&mut self) {
         let mut buf = Vec::new();
         let formatter = serde_json::ser::PrettyFormatter::with_indent(b"    ");

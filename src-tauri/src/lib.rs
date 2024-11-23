@@ -172,7 +172,7 @@ fn build_tree(key_node: &Rc<RefCell<KeyNode>>, hive: &mut nt_hive2::Hive<File, n
 }
 
 #[tauri::command]
-fn t_hive_differ(filepath1: &str, filepath2: &str, storage: State<AppStorage>) -> trees::Nodes {
+fn t_hive_differ(filepath1: &str, filepath2: &str, _storage: State<AppStorage>) -> trees::Nodes {
     println!("t_hive_differ called");
 
     let mut nodes = trees::Nodes::new();
@@ -186,9 +186,8 @@ fn t_hive_differ(filepath1: &str, filepath2: &str, storage: State<AppStorage>) -
     let key_node1 = hive1.get_root_node().unwrap();
     let key_node2 = hive2.get_root_node().unwrap();
 
-    let (name1, mut tree1) = build_tree(&Rc::new(RefCell::new(key_node1)), hive1.hive.as_mut().unwrap(), "/");
-
-    let (name2, mut tree2) = build_tree(&Rc::new(RefCell::new(key_node2)), hive2.hive.as_mut().unwrap(), "/");
+    let (_, tree1) = build_tree(&Rc::new(RefCell::new(key_node1)), hive1.hive.as_mut().unwrap(), "/");
+    let (_, tree2) = build_tree(&Rc::new(RefCell::new(key_node2)), hive2.hive.as_mut().unwrap(), "/");
 
     nodes.push_node(tree1);
     nodes.push_node(tree2);
