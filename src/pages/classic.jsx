@@ -17,7 +17,7 @@ function Classic() {
   const [Sam, setSam] = useState(false);
   const [User, setUser] = useState(false);
   const [Table, setTable] = useState({});
-
+  
   const filePathChange = (data) => {
     // console.log(data);
     // console.log(data['Message']);
@@ -72,8 +72,10 @@ function Classic() {
   const systemReader = (filePath) => {
     if (!filePath) {
       warn('Error: filePath is undefined or empty.');
+      navigate("/");
       return;
     }
+    
     warn("System reader called : " + filePath);
     invoke('t_hive_reader', { filepath: filePath })
       .then((message) => {
