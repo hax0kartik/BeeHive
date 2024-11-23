@@ -20,10 +20,17 @@
     "@tauri-apps/plugin-dialog": "^2.0.0",
     "@tauri-apps/plugin-log": "^2.0.0",
     "@tauri-apps/plugin-shell": ">=2.0.0",
+    "ag-grid-community": "^32.3.3",
+    "ag-grid-react": "^32.3.3",
     "autoprefixer": "^10.4.20",
+    "gridjs": "^6.2.0",
+    "gridjs-react": "^6.1.1",
+    "jiff": "^0.7.3",
+    "json-diff-kit": "^1.0.29",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.27.0"
+    "react-router-dom": "^6.27.0",
+    "rfc6902": "^5.1.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": ">=2.0.0",
