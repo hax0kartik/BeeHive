@@ -214,9 +214,9 @@ function Classic() {
   return (
     <div className='flex flex-col h-screen w-screen overflow-y-hidden'>
       <Header onChange={filePathChange} />
-      <div className="flex h-full">
-        <div className='flex align-items flex-col pl-6 pt-6 gap-4 w-2/5'>
-          <ul className="menu menu-xs bg-base-200 rounded-lg w-full overflow-x-auto overflow-y-auto h-5/6">
+      <div className="flex h-full overflow-y-scroll">
+        <div className='flex align-items flex-col pl-6 pt-6 gap-4 w-2/5 pb-6'>
+          <ul className="menu menu-xs bg-base-200 rounded-lg w-full overflow-x-auto overflow-y-auto h-full">
             {
               Object.entries(tree).map(entry => {
                 return addMenuEntries(entry[0], entry[1]);
@@ -225,7 +225,7 @@ function Classic() {
           </ul>
         </div>
         <div className="divider divider-horizontal"></div>
-        <div className='w-full'>
+        <div className='w-full overflow-y-scroll'>
           <table className='table table-fixed'>
             <thead>
               <tr className=''>
